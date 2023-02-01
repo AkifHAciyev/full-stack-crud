@@ -1,43 +1,76 @@
 import axios from 'axios';
-import { useState } from 'react';
-import { useQuery, useMutation } from 'react-query';
+import { useRef, useState } from 'react';
+import { useQuery } from 'react-query';
 
 const ProductsQuery = () => {
+	let ref = useRef(null);
+	const [clicked, setClicked] = useState(false);
+	const [updated, setUpdated] = useState({ name: '', description: '' });
 	const [newProduct, setNewProduct] = useState({
 		name: '',
 		description: '',
 	});
 
-	const { data, isLoading } = useQuery('products', () => {
-		return axios.get('http://localhost:4000/products/').then((res) => res.data);
-	});
+	const { data, isLoading } = useQuery(
+		'products',
+		() => {
+			return axios.get('http://localhost:4000/products/').then((res) => res.data);
+		},
+		{
+			refetchInterval: 5000,
+		}
+	);
 
-	const addProduct = (product) => {
-		return axios.post('http://localhost:4000/products/', product);
+	const handleDelete = (item) => {
+		axios.delete('http://localhost:4000/products/' + item._id);
 	};
-
-	const useAddProductData = () => {
-		return useMutation(addProduct);
-	};
-
-	const handleChange = (e) => {
-		const name = e.target?.name;
-		const value = e.target?.value;
+	const handleClick = () => {
+		axios.post('http://localhost:4000/products/', newProduct);
 
 		setNewProduct({
-			...newProduct,
-			[name]: value,
+			name: '',
+			description: '',
 		});
+	};
+	const handleUpdate = () => {
+		axios
+			.put('http://localhost:4000/products/' + updated._id, {
+				productName: updated.productName,
+				description: updated.description,
+			})
+			.then((res) => setClicked(false));
 	};
 
 	if (isLoading) return <h1>loading ...</h1>;
 
 	return (
 		<>
-			<form onSubmit={(e) => e.preventDefault()}>
-				<input value={newProduct.name} onChange={handleChange} name="name" placeholder="Name" />
-				<input value={newProduct.description} onChange={handleChange} name="description" placeholder="Description" />
-				<button>Add product</button>
+			<form>
+				<input
+					value={newProduct.name}
+					onChange={(e) =>
+						setNewProduct((prevState) => {
+							return {
+								...prevState,
+								name: e.target.value,
+							};
+						})
+					}
+					placeholder="name"
+				/>
+				<input
+					value={newProduct.description}
+					onChange={(e) =>
+						setNewProduct((prevState) => {
+							return {
+								...prevState,
+								description: e.target.value,
+							};
+						})
+					}
+					placeholder="description"
+				/>
+				<button onClick={() => handleClick()}>Add product</button>
 			</form>
 			<table className="w3-table-all">
 				<thead className="w3-light-grey">
@@ -57,12 +90,47 @@ const ProductsQuery = () => {
 								<button>Update</button>
 							</td>
 							<td>
-								<button>Delete</button>
+								<button onClick={() => handleDelete(product)}>Delete</button>
 							</td>
 						</tr>
 					))}
 				</tbody>
 			</table>
+			{clicked ? (
+				<form ref={ref} className="updateContainer">
+					<input
+						value={updated.productName}
+						type="text"
+						onChange={(e) =>
+							setUpdated((prevState) => {
+								return {
+									...prevState,
+									productName: e.target.value,
+								};
+							})
+						}
+						placeholder="enter new name"
+					/>
+					<input
+						value={updated.description}
+						onChange={(e) =>
+							setUpdated((prevState) => {
+								return {
+									...prevState,
+									description: e.target.value,
+								};
+							})
+						}
+						type="text"
+						placeholder="enter new description"
+					/>
+					<button className="add" onClick={() => handleUpdate()}>
+						Send
+					</button>
+				</form>
+			) : (
+				<></>
+			)}
 		</>
 	);
 };
