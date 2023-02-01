@@ -35,10 +35,18 @@ const ProductsQuery = () => {
 	const handleUpdate = () => {
 		axios
 			.put('http://localhost:4000/products/' + updated._id, {
-				productName: updated.productName,
+				name: updated.name,
 				description: updated.description,
 			})
 			.then((res) => setClicked(false));
+	};
+
+	const handleClickUpdate = (product) => {
+		setClicked((prev) => !prev);
+		setUpdated(product);
+		ref.current?.scrollIntoView({
+			behavior: 'smooth',
+		});
 	};
 
 	if (isLoading) return <h1>loading ...</h1>;
@@ -87,7 +95,7 @@ const ProductsQuery = () => {
 							<td>{product?.description}</td>
 							<td>{product?.date}</td>
 							<td>
-								<button>Update</button>
+								<button onClick={() => handleClickUpdate(product)}>Update</button>
 							</td>
 							<td>
 								<button onClick={() => handleDelete(product)}>Delete</button>
@@ -99,13 +107,13 @@ const ProductsQuery = () => {
 			{clicked ? (
 				<form ref={ref} className="updateContainer">
 					<input
-						value={updated.productName}
+						value={updated.name}
 						type="text"
 						onChange={(e) =>
 							setUpdated((prevState) => {
 								return {
 									...prevState,
-									productName: e.target.value,
+									name: e.target.value,
 								};
 							})
 						}
