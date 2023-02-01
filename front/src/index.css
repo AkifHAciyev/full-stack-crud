@@ -1,0 +1,18 @@
+button {
+	cursor: pointer;
+	border-radius: 8px;
+	border: none;
+	background-color: rgb(71, 71, 189);
+	color: #fff;
+}
+
+form {
+	margin: 30px;
+}
+
+form input {
+	margin-right: 10px;
+	border-radius: 8px;
+	border: 1px solid grey;
+	padding-left: 10px;
+}
